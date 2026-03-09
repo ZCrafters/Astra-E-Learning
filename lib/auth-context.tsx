@@ -87,10 +87,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Save progress to localStorage
-  const saveLocalProgress = (progressData: UserProgress[]) => {
+  const saveLocalProgress = useCallback((progressData: UserProgress[]) => {
     if (typeof window === 'undefined') return;
     localStorage.setItem('pao_progress', JSON.stringify(progressData));
-  };
+  }, []);
+
+  // Fetch user progress from Supabase
+  const fetchUserProgress = useCallback(async (userId: string) => {
+    if (!isSupabaseConfigured()) return;
+    
+    const { data } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', userId);
+    
+    if (data) {
+      const mapped = data.map(p => ({
+        course_id: p.course_id,
+        module_id: p.module_id,
+        progress: p.progress,
+        completed_lessons: p.completed_lessons,
+        total_lessons: p.total_lessons,
+        is_completed: p.is_completed,
+      }));
+      setProgress(mapped);
+      saveLocalProgress(mapped);
+    }
+  }, [saveLocalProgress]);
 
   // Check device registration via Supabase
   const checkDeviceRegistration = useCallback(async (deviceId: string) => {
@@ -122,30 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return false;
     }
-  }, []);
-
-  // Fetch user progress from Supabase
-  const fetchUserProgress = async (userId: string) => {
-    if (!isSupabaseConfigured()) return;
-    
-    const { data } = await supabase
-      .from('user_progress')
-      .select('*')
-      .eq('user_id', userId);
-    
-    if (data) {
-      const mapped = data.map(p => ({
-        course_id: p.course_id,
-        module_id: p.module_id,
-        progress: p.progress,
-        completed_lessons: p.completed_lessons,
-        total_lessons: p.total_lessons,
-        is_completed: p.is_completed,
-      }));
-      setProgress(mapped);
-      saveLocalProgress(mapped);
-    }
-  };
+  }, [fetchUserProgress]);
 
   // Initial auth check
   useEffect(() => {
@@ -218,7 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return () => subscription.unsubscribe();
     }
-  }, [checkDeviceRegistration, loadLocalProfile]);
+  }, [checkDeviceRegistration, loadLocalProfile, fetchUserProgress]);
 
   // Login with OTP
   const loginWithOTP = async (phone: string) => {
@@ -289,8 +289,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await supabase.from('users').insert({
           id: data.user.id,
           phone: formattedPhone,
-          name: name || 'PAO User',
-          region: region || 'Jakarta',
+          name: userName || 'PAO User',
+          region: userRegion || 'Jakarta',
           device_id: deviceId,
         });
       }
