@@ -1,0 +1,155 @@
+# Astra E-Learning - CI/CD Pipeline
+# Workflow untuk build dan deploy aplikasi Next.js
+
+name: Build and Deploy
+
+# Trigger: Jalankan saat push ke branch main atau pull request
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+# Environment variables yang digunakan di seluruh workflow
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ==========================================
+  # JOB 1: Build dan Test
+  # ==========================================
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Step 1: Checkout kode dari repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Step 2: Setup Node.js
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm ci
+      
+      # Step 4: Create .env.local file from secrets
+      # Secrets diambil dari GitHub Settings → Secrets → Actions
+      - name: Create .env.local
+        run: |
+          echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env.local
+          echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}" >> .env.local
+          echo "NEXT_PUBLIC_APP_NAME=Astra E-Learning" >> .env.local
+          echo "NEXT_PUBLIC_APP_URL=${{ vars.NEXT_PUBLIC_APP_URL || 'https://localhost:3000' }}" >> .env.local
+      
+      # Step 5: Run linter
+      - name: Run ESLint
+        run: npm run lint
+        continue-on-error: true
+      
+      # Step 6: Build aplikasi Next.js
+      - name: Build Next.js app
+        run: npm run build
+        env:
+          # Environment variables untuk build time
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      
+      # Step 7: Upload build artifact (untuk deploy)
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-files
+          path: |
+            .next/
+            package.json
+            package-lock.json
+            public/
+          retention-days: 7
+
+  # ==========================================
+  # JOB 2: Deploy ke Vercel (Production)
+  # ==========================================
+  deploy-vercel:
+    name: Deploy to Vercel
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      # Install Vercel CLI
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+      
+      # Deploy ke Vercel (Production)
+      - name: Deploy to Vercel Production
+        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+  # ==========================================
+  # JOB 3: Deploy ke Netlify (Alternative)
+  # ==========================================
+  # deploy-netlify:
+  #   name: Deploy to Netlify
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   
+  #   steps:
+  #     - name: Download build artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: build-files
+  #     
+  #     - name: Deploy to Netlify
+  #       uses: nwtgck/actions-netlify@v3.0
+  #       with:
+  #         publish-dir: './out'
+  #         production-branch: main
+  #         github-token: ${{ secrets.GITHUB_TOKEN }}
+  #         deploy-message: "Deploy from GitHub Actions"
+  #       env:
+  #         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  #         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+  # ==========================================
+  # JOB 4: Deploy ke GitHub Pages (Static)
+  # ==========================================
+  # deploy-github-pages:
+  #   name: Deploy to GitHub Pages
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   if: github.ref == 'refs/heads/main'
+  #   permissions:
+  #     contents: read
+  #     pages: write
+  #     id-token: write
+  #   
+  #   steps:
+  #     - name: Download build artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: build-files
+  #     
+  #     - name: Setup Pages
+  #       uses: actions/configure-pages@v4
+  #     
+  #     - name: Upload to GitHub Pages
+  #       uses: actions/upload-pages-artifact@v3
+  #       with:
+  #         path: './out'
+  #     
+  #     - name: Deploy to GitHub Pages
+  #       uses: actions/deploy-pages@v4
