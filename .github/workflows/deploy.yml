@@ -36,7 +36,7 @@ jobs:
       
       # Step 3: Install dependencies
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --include=optional
       
       # Step 4: Create .env.local file from secrets
       # Secrets diambil dari GitHub Settings → Secrets → Actions

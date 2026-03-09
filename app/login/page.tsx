@@ -17,12 +17,11 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
-  const [isDevMode, setIsDevMode] = useState(false);
+  const [isDevMode] = useState(
+    () => !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  );
 
   useEffect(() => {
-    const hasSupabase = !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    setIsDevMode(!hasSupabase);
-    
     if (!authLoading && (isAuthenticated || deviceRegistered)) {
       router.push('/');
     }
