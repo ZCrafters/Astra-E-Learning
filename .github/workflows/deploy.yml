@@ -79,7 +79,7 @@ jobs:
     name: Deploy to Vercel
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != ''
     
     steps:
       - name: Checkout repository
@@ -91,7 +91,7 @@ jobs:
       
       # Deploy ke Vercel (Production)
       - name: Deploy to Vercel Production
-        run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: vercel --prod --token="${{ secrets.VERCEL_TOKEN }}"
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
