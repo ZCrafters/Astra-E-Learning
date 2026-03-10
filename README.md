@@ -8,6 +8,27 @@ Platform pembelajaran digital untuk Partnership Account Officer (PAO) Finatra - 
 
 Astra E-Learning adalah aplikasi mobile-first e-learning yang dirancang khusus untuk melatih Partnership Account Officer (PAO) dalam strategi pemetaan wilayah, rekrutmen agen RT/RW, dan teknik penjualan produk Finatra.
 
+## 🔗 Akses Aplikasi
+
+### Via Vercel (Online - Recommended)
+Akses langsung aplikasi yang sudah di-deploy:
+
+👉 **[https://astra-e-learning.vercel.app](https://astra-e-learning.vercel.app)**
+
+### Via GitHub (Clone & Run Lokal)
+1. Buka repository di GitHub:
+   👉 **[https://github.com/ZCrafters/Astra-E-Learning](https://github.com/ZCrafters/Astra-E-Learning)**
+
+2. Clone dan jalankan secara lokal:
+```bash
+git clone https://github.com/ZCrafters/Astra-E-Learning.git
+cd Astra-E-Learning
+npm install
+npm run dev
+```
+
+3. Buka [http://localhost:3000](http://localhost:3000) di browser
+
 ## ✨ Fitur Utama
 
 ### 🔐 Autentikasi
@@ -64,8 +85,8 @@ Astra E-Learning adalah aplikasi mobile-first e-learning yang dirancang khusus u
 
 1. **Clone repository**
 ```bash
-git clone https://github.com/username/astra-elearning.git
-cd astra-elearning
+git clone https://github.com/ZCrafters/Astra-E-Learning.git
+cd Astra-E-Learning
 ```
 
 2. **Install dependencies**
