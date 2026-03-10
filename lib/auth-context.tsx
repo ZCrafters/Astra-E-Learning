@@ -49,6 +49,11 @@ function getDeviceId(): string {
   return deviceId;
 }
 
+// Check if trial mode is enabled
+const isTrialMode = () => {
+  return process.env.NEXT_PUBLIC_TRIAL_MODE === 'true';
+};
+
 // Check if Supabase is configured
 const isSupabaseConfigured = () => {
   return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -152,9 +157,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       setIsLoading(true);
       
-      // Check if Supabase is configured
-      if (!isSupabaseConfigured()) {
-        console.warn('Supabase not configured. Running in development mode with localStorage.');
+      // Check if trial mode or Supabase not configured
+      if (isTrialMode() || !isSupabaseConfigured()) {
+        console.info('Running in trial mode with localStorage. OTP code: 123456');
         setIsDevMode(true);
         // Try to load from localStorage
         const localProfile = loadLocalProfile();
