@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { supabase } from './supabase';
-import type { User } from '@supabase/supabase-js';
+import type { User, AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 interface UserProfile {
   id: string;
@@ -102,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('user_id', userId);
     
     if (data) {
-      const mapped = data.map(p => ({
+      const mapped = data.map((p: UserProgress) => ({
         course_id: p.course_id,
         module_id: p.module_id,
         progress: p.progress,
@@ -208,7 +208,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     if (isSupabaseConfigured()) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
         if (session?.user) {
           setUser(session.user);
         } else {
