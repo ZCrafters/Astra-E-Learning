@@ -18,7 +18,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
   const [isDevMode] = useState(
-    () => !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    () => process.env.NEXT_PUBLIC_TRIAL_MODE === 'true' || !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
   useEffect(() => {
@@ -159,8 +159,8 @@ export default function LoginPage() {
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
             <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm text-amber-800 font-medium">Mode Pengembangan</p>
-              <p className="text-xs text-amber-700">Supabase belum dikonfigurasi. Gunakan OTP: <strong>123456</strong></p>
+              <p className="text-sm text-amber-800 font-medium">Mode Trial</p>
+              <p className="text-xs text-amber-700">Gunakan nomor HP apapun dan kode OTP: <strong>123456</strong></p>
             </div>
           </div>
         )}
@@ -220,7 +220,7 @@ export default function LoginPage() {
             
             {isDevMode && (
               <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl">
-                <p className="text-sm text-green-800 text-center font-medium">OTP untuk testing: 123456</p>
+                <p className="text-sm text-green-800 text-center font-medium">Mode Trial — Kode OTP: 123456</p>
               </div>
             )}
             
