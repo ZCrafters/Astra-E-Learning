@@ -43,7 +43,7 @@ function getDeviceId(): string {
   
   let deviceId = localStorage.getItem('pao_device_id');
   if (!deviceId) {
-    deviceId = 'dev_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    deviceId = 'dev_' + crypto.randomUUID();
     localStorage.setItem('pao_device_id', deviceId);
   }
   return deviceId;
@@ -270,7 +270,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Dev mode: accept any 6-digit OTP
       if (token === '123456') {
         // Generate or reuse user ID
-        const userId = profile?.id || 'dev-' + Math.random().toString(36).substring(2, 9);
+        const userId = profile?.id || 'dev-' + crypto.randomUUID();
         const profileData: UserProfile = {
           id: userId,
           phone: formattedPhone,
