@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, PlayCircle, BookOpen, Map, TrendingUp, Award, Clock, Star, LogOut, ClipboardList, ChevronRight } from 'lucide-react';
+import { Bell, PlayCircle, BookOpen, Map, TrendingUp, Award, Clock, Star, LogOut, ClipboardList, ChevronRight, BarChart3 } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/lib/auth-context';
 import { useMissions } from '@/lib/missions-context';
@@ -143,6 +143,14 @@ export default function Dashboard() {
               </div>
               <span className="text-slate-900 font-bold">Pemetaan</span>
               <span className="text-slate-500 text-xs">Zona Prioritas</span>
+            </Link>
+            
+            <Link href="/analisis" className="flex flex-col items-start p-4 bg-amber-50 rounded-2xl border border-transparent hover:border-amber-200 transition-all active:scale-[0.98] cursor-pointer">
+              <div className="bg-amber-600 text-white p-2.5 rounded-xl mb-3">
+                <BarChart3 className="w-6 h-6" />
+              </div>
+              <span className="text-slate-900 font-bold">Analisis</span>
+              <span className="text-slate-500 text-xs">Wilayah & Prioritas</span>
             </Link>
             
             <Link href="/statistics" className="flex flex-col items-start p-4 bg-indigo-50 rounded-2xl border border-transparent hover:border-indigo-200 transition-all active:scale-[0.98] cursor-pointer">

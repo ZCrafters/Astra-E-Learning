@@ -37,17 +37,27 @@ function subscribe(listener: () => void) {
   };
 }
 
+let cachedSnapshot: string[] = [];
+let cachedRaw: string | null = null;
+
 function getSnapshot(): string[] {
   const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) return parsed;
-    } catch {
-      // ignore
+  if (saved !== cachedRaw) {
+    cachedRaw = saved;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          cachedSnapshot = parsed;
+        }
+      } catch {
+        // ignore
+      }
+    } else {
+      cachedSnapshot = [];
     }
   }
-  return [];
+  return cachedSnapshot;
 }
 
 const emptyArray: string[] = [];
@@ -56,7 +66,10 @@ function getServerSnapshot(): string[] {
 }
 
 function setStoredMissions(missions: string[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(missions));
+  const raw = JSON.stringify(missions);
+  cachedRaw = raw;
+  cachedSnapshot = missions;
+  localStorage.setItem(STORAGE_KEY, raw);
   emitChange();
 }
 
