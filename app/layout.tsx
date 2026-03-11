@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import { MissionsProvider } from '@/lib/missions-context';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 
 export const metadata: Metadata = {
   title: 'PAO Finatra E-Learning',
@@ -20,7 +17,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="id" className={inter.variable}>
+    <html lang="id" style={{ fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif' }}>
       <body className="bg-slate-100 text-slate-900 antialiased">
         <AuthProvider>
           <MissionsProvider>

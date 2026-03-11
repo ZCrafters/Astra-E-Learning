@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, ClipboardList, BookOpen, User } from 'lucide-react';
+import { Home, BookOpen, ClipboardList, TrendingUp, User } from 'lucide-react';
 import { memo } from 'react';
 
 const navItems = [

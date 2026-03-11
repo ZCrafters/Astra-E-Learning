@@ -1,129 +1,167 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft, Download, Star, Clock } from 'lucide-react';
-import { getMissionById, generateCSV, categoryLabels } from '@/lib/missionData';
-import { useMissions } from '@/lib/missions-context';
-import { useCallback } from 'react';
+import { ArrowLeft, CheckCircle2, Clock, Zap, ListChecks } from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
+import { tugasData, type Tugas } from '@/lib/tugasData';
+import { fetchTugasById, completeTugas, fetchCompletedTugasIds } from '@/lib/tugas';
 
 export default function MissionDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id as string;
-  const mission = getMissionById(id);
-  const { isMissionCompleted, completeMission } = useMissions();
+  const { profile, isLoading } = useAuth();
+  const [tugas, setTugas] = useState<Tugas | null>(null);
+  const [isDone, setIsDone] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
 
-  const handleDownload = useCallback(() => {
-    if (!mission) return;
-    const csv = generateCSV(mission.template);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = mission.template.filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [mission]);
+  const id = Number(params.id);
 
-  const handleComplete = useCallback(() => {
-    if (!mission) return;
-    if (confirm('Sudah selesai mengerjakan tugas ini?')) {
-      completeMission(mission.id);
+  useEffect(() => {
+    async function loadData() {
+      setLoadingData(true);
+      const data = await fetchTugasById(id);
+      setTugas(data);
+
+      if (profile?.id) {
+        const completed = await fetchCompletedTugasIds(profile.id);
+        setIsDone(completed.includes(id));
+      } else {
+        const saved = localStorage.getItem('pao_completed_tugas');
+        if (saved) {
+          const ids: number[] = JSON.parse(saved);
+          setIsDone(ids.includes(id));
+        }
+      }
+      setLoadingData(false);
     }
-  }, [mission, completeMission]);
+    if (!isLoading && id) loadData();
+  }, [id, profile, isLoading]);
 
-  if (!mission) {
+  const handleComplete = async () => {
+    if (isDone || submitting) return;
+    setSubmitting(true);
+
+    let success = false;
+    if (profile?.id) {
+      success = await completeTugas(profile.id, id);
+    }
+
+    // Also save to localStorage as fallback
+    const saved = localStorage.getItem('pao_completed_tugas');
+    const ids: number[] = saved ? JSON.parse(saved) : [];
+    if (!ids.includes(id)) {
+      ids.push(id);
+      localStorage.setItem('pao_completed_tugas', JSON.stringify(ids));
+    }
+
+    setIsDone(true);
+    setSubmitting(false);
+    alert('🎉 Tugas berhasil diselesaikan! XP +' + (tugas?.xp || 0));
+    router.push('/missions');
+  };
+
+  if (isLoading || loadingData) {
     return (
-      <div className="flex flex-col min-h-screen items-center justify-center p-4">
-        <p className="text-lg text-slate-600 mb-4">Tugas tidak ditemukan</p>
-        <Link href="/missions" className="text-blue-600 font-bold text-base">
-          ← Kembali ke Daftar Tugas
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!tugas) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4">
+        <p className="text-slate-500 text-lg">Tugas tidak ditemukan</p>
+        <Link href="/missions" className="text-blue-600 font-bold hover:underline">
+          Kembali ke Daftar Tugas
         </Link>
       </div>
     );
   }
 
-  const done = isMissionCompleted(mission.id);
-
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
+    <>
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-slate-100 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <Link href="/missions" className="flex items-center justify-center p-2 hover:bg-slate-50 rounded-full transition-colors">
-            <ArrowLeft className="w-5 h-5 text-slate-600" />
+      <header className="sticky top-0 z-10 bg-white border-b border-slate-100 px-4 py-4">
+        <div className="flex items-center gap-3">
+          <Link href="/missions" className="p-2 -ml-2 rounded-xl hover:bg-slate-100 transition-colors">
+            <ArrowLeft className="w-5 h-5 text-slate-700" />
           </Link>
-          <h1 className="text-lg font-bold text-slate-900">Detail Tugas</h1>
-          <div className="w-9" />
+          <h1 className="text-lg font-bold text-slate-900 truncate">Detail Tugas</h1>
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto pb-24 space-y-4">
-        {/* Title & Meta */}
-        <section className="px-4 pt-4">
-          <h2 className="text-lg font-bold text-slate-900 mb-3">{mission.title}</h2>
-          <div className="flex flex-wrap items-center gap-3 text-base text-slate-500">
-            <span className="flex items-center gap-1">
-              <Clock className="w-5 h-5" />
-              {mission.duration}
-            </span>
-            <span className="flex items-center gap-1">
-              <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
-              {mission.xp} XP
-            </span>
-            <span className="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-sm font-bold">
-              {categoryLabels[mission.category]}
-            </span>
-          </div>
-        </section>
-
-        {/* Cara Mengerjakan */}
-        <section className="px-4">
-          <div className="bg-white rounded-2xl border border-slate-200 p-4 space-y-4">
-            <h3 className="text-lg font-bold text-slate-900">Cara Mengerjakan</h3>
-            <ol className="space-y-3">
-              {mission.instruction.map((step, i) => (
-                <li key={i} className="flex gap-3 text-base text-slate-700">
-                  <span className="flex items-center justify-center w-7 h-7 bg-blue-100 text-blue-700 rounded-full text-sm font-bold shrink-0">
-                    {i + 1}
-                  </span>
-                  <span className="pt-0.5">{step}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </section>
-
-        {/* Download Format */}
-        <section className="px-4">
-          <button
-            onClick={handleDownload}
-            className="flex items-center justify-center gap-2 w-full bg-white border-2 border-blue-200 text-blue-700 font-bold py-4 rounded-xl min-h-[56px] hover:bg-blue-50 active:scale-[0.98] transition-all text-base"
+      <main className="flex-1 overflow-y-auto pb-8 px-4">
+        {/* Tugas Info */}
+        <div className="pt-6 pb-4">
+          <span
+            className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full ${
+              tugas.kategori === 'Cari Wilayah'
+                ? 'bg-blue-100 text-blue-700'
+                : tugas.kategori === 'Kenali Orang'
+                  ? 'bg-purple-100 text-purple-700'
+                  : 'bg-amber-100 text-amber-700'
+            }`}
           >
-            <Download className="w-5 h-5" />
-            Download Format Excel ({mission.template.filename})
-          </button>
-        </section>
+            {tugas.kategori}
+          </span>
+          <h2 className="text-2xl font-bold text-slate-900 mt-3">{tugas.judul}</h2>
+          <div className="flex items-center gap-4 mt-3 text-sm text-slate-500">
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-4 h-4" /> {tugas.durasi}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-amber-500" /> {tugas.xp} XP
+            </span>
+          </div>
+        </div>
 
-        {/* Saya Sudah Selesai */}
-        <section className="px-4">
-          {done ? (
-            <div className="w-full bg-green-100 text-green-800 font-bold py-4 rounded-xl min-h-[56px] text-center text-base">
-              ✅ Tugas ini sudah selesai!
-            </div>
-          ) : (
-            <button
-              onClick={handleComplete}
-              className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl min-h-[56px] hover:bg-blue-700 active:scale-[0.98] transition-all text-base"
-            >
-              Saya Sudah Selesai ✓
-            </button>
-          )}
-        </section>
+        {/* Status */}
+        {isDone && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 text-emerald-500 shrink-0" />
+            <p className="text-emerald-700 font-semibold text-sm">Tugas ini sudah selesai!</p>
+          </div>
+        )}
+
+        {/* Langkah-langkah */}
+        <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
+          <div className="flex items-center gap-2 mb-4">
+            <ListChecks className="w-5 h-5 text-blue-600" />
+            <h3 className="font-bold text-slate-900">Langkah-langkah</h3>
+          </div>
+          <ol className="space-y-4">
+            {tugas.langkah.map((step, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-bold flex items-center justify-center">
+                  {i + 1}
+                </span>
+                <p className="text-sm text-slate-700 pt-1 leading-relaxed">{step}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+
+        {/* Complete Button */}
+        <div className="mt-6">
+          <button
+            onClick={handleComplete}
+            disabled={isDone || submitting}
+            className={`w-full py-4 rounded-2xl font-bold text-center transition-all active:scale-[0.98] ${
+              isDone
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : submitting
+                  ? 'bg-blue-400 text-white cursor-wait'
+                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg'
+            }`}
+          >
+            {isDone ? '✅ Sudah Selesai' : submitting ? 'Menyimpan...' : '🚀 Saya Sudah Selesai'}
+          </button>
+        </div>
       </main>
-    </div>
+    </>
   );
 }

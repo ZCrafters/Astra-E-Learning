@@ -1,16 +1,33 @@
 'use client';
 
 import Link from 'next/link';
-import { Star, ChevronRight, LogOut } from 'lucide-react';
+import { Bell, PlayCircle, BookOpen, Map, TrendingUp, Award, Clock, Star, LogOut, ClipboardList } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/lib/auth-context';
-import { useMissions } from '@/lib/missions-context';
-import { missionsData } from '@/lib/missionData';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function Dashboard() {
-  const { profile, logout, isLoading } = useAuth();
-  const { completedMissions, weeklyCompleted, weeklyTotal, totalXP, level } = useMissions();
+  const { profile, progress, logout, isLoading, isAuthenticated } = useAuth();
+  const [completedTugasCount, setCompletedTugasCount] = useState(0);
+
+  const TOTAL_TUGAS = 10;
+  
+  // Calculate progress from database
+  const userProgress = useMemo(() => {
+    const courseProgress: Record<string, number> = {};
+    
+    coursesData.forEach(course => {
+      const moduleProgresses = course.modules.map(module => {
+        const saved = progress.find(p => p.module_id === module.id);
+        return saved ? saved.progress : module.progress;
+      });
+      
+      const avgProgress = moduleProgresses.reduce((a, b) => a + b, 0) / moduleProgresses.length;
+      courseProgress[course.id] = Math.round(avgProgress);
+    });
+    
+    return courseProgress;
+  }, [progress]);
 
   // Pick today's mission: first incomplete mission, or last if all done
   const todayMission = useMemo(() => {
@@ -18,7 +35,15 @@ export default function Dashboard() {
     return next || missionsData[missionsData.length - 1];
   }, [completedMissions]);
 
-  const isTodayDone = completedMissions.includes(todayMission.id);
+  // Sync progress to database when component mounts
+  useEffect(() => {
+    // Load completed tugas count from localStorage
+    const saved = localStorage.getItem('pao_completed_tugas');
+    if (saved) {
+      const ids: number[] = JSON.parse(saved);
+      setCompletedTugasCount(ids.length);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -63,16 +88,71 @@ export default function Dashboard() {
                 {todayMission.xp} XP
               </span>
             </div>
-            {isTodayDone ? (
-              <span className="inline-block bg-green-500 text-white font-bold py-3 px-6 rounded-xl text-base">
-                ✅ Sudah Selesai
-              </span>
-            ) : (
-              <span className="inline-block bg-white text-blue-600 font-bold py-3 px-6 rounded-xl text-base">
-                Kerjakan Sekarang →
-              </span>
-            )}
-          </Link>
+          </div>
+        </section>
+
+        {/* Tugas Progress */}
+        <section className="px-4 pt-4">
+          <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h2 className="text-lg font-bold mb-0.5">Tugas Lapangan</h2>
+                  <p className="text-emerald-100 text-sm">Sudah {completedTugasCount} dari {TOTAL_TUGAS} tugas selesai</p>
+                </div>
+                <span className="bg-white/20 px-2.5 py-1 rounded-full text-sm font-bold">
+                  {completedTugasCount}/{TOTAL_TUGAS}
+                </span>
+              </div>
+              <div className="h-2.5 w-full bg-white/20 rounded-full overflow-hidden mb-4">
+                <div className="h-full bg-white rounded-full transition-all" style={{ width: `${(completedTugasCount / TOTAL_TUGAS) * 100}%` }}></div>
+              </div>
+              <Link href="/missions" className="block w-full bg-white text-emerald-600 font-bold py-3 rounded-xl text-center shadow-lg hover:bg-slate-50 active:scale-[0.98] transition-all">
+                <span className="flex items-center justify-center gap-2">
+                  <ClipboardList className="w-5 h-5" />
+                  LIHAT TUGAS HARI INI
+                </span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Quick Actions */}
+        <section className="px-4 pt-6">
+          <h3 className="text-slate-900 text-lg font-bold mb-4">Aksi Cepat</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <Link href="/courses" className="flex flex-col items-start p-4 bg-blue-50 rounded-2xl border border-transparent hover:border-blue-200 transition-all active:scale-[0.98]">
+              <div className="bg-blue-600 text-white p-2.5 rounded-xl mb-3">
+                <BookOpen className="w-6 h-6" />
+              </div>
+              <span className="text-slate-900 font-bold">Kursus Saya</span>
+              <span className="text-slate-500 text-xs">{coursesData.length} Program Aktif</span>
+            </Link>
+            
+            <Link href="/mapping" className="flex flex-col items-start p-4 bg-emerald-50 rounded-2xl border border-transparent hover:border-emerald-200 transition-all active:scale-[0.98] cursor-pointer">
+              <div className="bg-emerald-600 text-white p-2.5 rounded-xl mb-3">
+                <Map className="w-6 h-6" />
+              </div>
+              <span className="text-slate-900 font-bold">Pemetaan</span>
+              <span className="text-slate-500 text-xs">Zona Prioritas</span>
+            </Link>
+            
+            <Link href="/statistics" className="flex flex-col items-start p-4 bg-indigo-50 rounded-2xl border border-transparent hover:border-indigo-200 transition-all active:scale-[0.98] cursor-pointer">
+              <div className="bg-indigo-600 text-white p-2.5 rounded-xl mb-3">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <span className="text-slate-900 font-bold">Statistik</span>
+              <span className="text-slate-500 text-xs">Lihat Performa</span>
+            </Link>
+            
+            <Link href="/profile" className="flex flex-col items-start p-4 bg-orange-50 rounded-2xl border border-transparent hover:border-orange-200 transition-all active:scale-[0.98]">
+              <div className="bg-orange-500 text-white p-2.5 rounded-xl mb-3">
+                <Award className="w-6 h-6" />
+              </div>
+              <span className="text-slate-900 font-bold">Sertifikat</span>
+              <span className="text-slate-500 text-xs">{completedModules} Selesai</span>
+            </Link>
+          </div>
         </section>
 
         {/* Progress Mingguan */}
