@@ -124,13 +124,6 @@ Buka [http://localhost:3000](http://localhost:3000)
 
 ## 📱 Usage
 
-### Mode Development (Tanpa SMS)
-1. Buka halaman login
-2. Masukkan nomor HP apa saja (contoh: 81234567890)
-3. Gunakan OTP: `123456`
-4. Lengkapi profil
-5. Mulai belajar!
-
 ### Mode Production (Dengan SMS)
 1. Buka halaman login
 2. Masukkan nomor HP aktif

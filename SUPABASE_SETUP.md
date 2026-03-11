@@ -70,7 +70,7 @@ Data ini ada di: Project Settings → API
 1. Jalankan aplikasi: `npm run dev`
 2. Buka http://localhost:3000/login
 3. Masukkan nomor HP (format: 81234567890)
-4. Cek OTP di console (development mode) atau SMS (production)
+4. Cek SMS untuk kode OTP (production)
 5. Verifikasi dan lengkapi profil
 
 ## Troubleshooting

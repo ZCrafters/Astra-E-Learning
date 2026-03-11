@@ -17,9 +17,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [countdown, setCountdown] = useState(0);
-  const [isDevMode] = useState(
-    () => process.env.NEXT_PUBLIC_TRIAL_MODE === 'true' || !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
 
   useEffect(() => {
     if (!authLoading && (isAuthenticated || deviceRegistered)) {
@@ -155,16 +152,6 @@ export default function LoginPage() {
       </div>
 
       <div className="bg-white rounded-t-3xl px-6 py-8">
-        {isDevMode && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
-            <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm text-amber-800 font-medium">Mode Trial</p>
-              <p className="text-xs text-amber-700">Gunakan nomor HP apapun dan kode OTP: <strong>123456</strong></p>
-            </div>
-          </div>
-        )}
-
         {step === 'phone' && (
           <>
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Masuk dengan HP</h2>
@@ -218,12 +205,6 @@ export default function LoginPage() {
               Masukkan 6 digit kode yang dikirim ke <span className="font-medium text-slate-900">+62{phone}</span>
             </p>
             
-            {isDevMode && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl">
-                <p className="text-sm text-green-800 text-center font-medium">Mode Trial — Kode OTP: 123456</p>
-              </div>
-            )}
-            
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Kode OTP</label>
@@ -231,7 +212,7 @@ export default function LoginPage() {
                   type="text"
                   value={otp}
                   onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  placeholder="123456"
+                  placeholder="000000"
                   className="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-bold text-center text-2xl tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   maxLength={6}
                 />
