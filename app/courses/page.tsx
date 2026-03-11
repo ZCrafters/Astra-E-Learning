@@ -75,7 +75,7 @@ export default function CoursesPage() {
               
               <Link 
                 href="/learn" 
-                className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700 active:scale-[0.98] transition-all"
+                className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-blue-700 active:scale-[0.98] transition-all cursor-pointer"
               >
                 <PlayCircle className="w-5 h-5" />
                 Lanjutkan Modul
@@ -91,8 +91,8 @@ export default function CoursesPage() {
             {mainCourse.modules.map((module, index) => (
               <Link 
                 key={module.id} 
-                href={module.progress === 100 ? "#" : "/learn"}
-                className="flex gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-blue-300 active:scale-[0.99] transition-all"
+                href={module.progress === 100 ? "#" : `/learn/${module.id}`}
+                className="flex gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-blue-300 active:scale-[0.99] transition-all cursor-pointer"
               >
                 <div className="relative w-24 h-20 rounded-lg bg-slate-200 shrink-0 overflow-hidden">
                   <Image 
@@ -144,8 +144,8 @@ export default function CoursesPage() {
             {coursesData.slice(1).map((course) => (
               <Link 
                 key={course.id} 
-                href="#"
-                className="flex gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-blue-300 active:scale-[0.99] transition-all"
+                href={`/courses/${course.id}`}
+                className="flex gap-3 p-3 bg-white rounded-xl border border-slate-200 hover:border-blue-300 active:scale-[0.99] transition-all cursor-pointer"
               >
                 <div className="relative w-24 h-20 rounded-lg bg-slate-200 shrink-0 overflow-hidden">
                   <Image 

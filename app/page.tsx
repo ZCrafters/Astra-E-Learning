@@ -126,7 +126,7 @@ export default function Dashboard() {
               <span className="text-slate-500 text-xs">{coursesData.length} Program Aktif</span>
             </Link>
             
-            <Link href="/courses" className="flex flex-col items-start p-4 bg-emerald-50 rounded-2xl border border-transparent hover:border-emerald-200 transition-all active:scale-[0.98]">
+            <Link href="/mapping" className="flex flex-col items-start p-4 bg-emerald-50 rounded-2xl border border-transparent hover:border-emerald-200 transition-all active:scale-[0.98] cursor-pointer">
               <div className="bg-emerald-600 text-white p-2.5 rounded-xl mb-3">
                 <Map className="w-6 h-6" />
               </div>
@@ -134,7 +134,7 @@ export default function Dashboard() {
               <span className="text-slate-500 text-xs">Zona Prioritas</span>
             </Link>
             
-            <Link href="/profile" className="flex flex-col items-start p-4 bg-indigo-50 rounded-2xl border border-transparent hover:border-indigo-200 transition-all active:scale-[0.98]">
+            <Link href="/statistics" className="flex flex-col items-start p-4 bg-indigo-50 rounded-2xl border border-transparent hover:border-indigo-200 transition-all active:scale-[0.98] cursor-pointer">
               <div className="bg-indigo-600 text-white p-2.5 rounded-xl mb-3">
                 <TrendingUp className="w-6 h-6" />
               </div>
