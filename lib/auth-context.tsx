@@ -49,11 +49,6 @@ function getDeviceId(): string {
   return deviceId;
 }
 
-// Check if trial mode is enabled
-const isTrialMode = () => {
-  return process.env.NEXT_PUBLIC_TRIAL_MODE === 'true';
-};
-
 // Check if Supabase is configured
 const isSupabaseConfigured = () => {
   return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -65,7 +60,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [progress, setProgress] = useState<UserProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deviceRegistered, setDeviceRegistered] = useState(false);
-  const [isDevMode, setIsDevMode] = useState(false);
 
   // Load saved profile from localStorage (for dev mode or when Supabase is not available)
   const loadLocalProfile = useCallback(() => {
@@ -157,15 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const initAuth = async () => {
       setIsLoading(true);
       
-      // Check if trial mode or Supabase not configured
-      if (isTrialMode() || !isSupabaseConfigured()) {
-        console.info('Running in trial mode with localStorage. OTP code: 123456');
-        setIsDevMode(true);
-        // Try to load from localStorage
-        const localProfile = loadLocalProfile();
-        if (localProfile) {
-          setDeviceRegistered(true);
-        }
+      if (!isSupabaseConfigured()) {
         setIsLoading(false);
         return;
       }
@@ -231,12 +217,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ? '+62' + phone.substring(1) 
       : phone.startsWith('+') ? phone : '+62' + phone;
 
-    if (isDevMode) {
-      // Dev mode: simulate OTP sent
-      console.log(`[DEV] OTP sent to ${formattedPhone}: 123456`);
-      return { error: null };
-    }
-
     const { error } = await supabase.auth.signInWithOtp({
       phone: formattedPhone,
     });
@@ -256,27 +236,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userName = nameInput || profile?.name || 'PAO User';
     const userRegion = regionInput || profile?.region || 'Jakarta';
     
-    if (isDevMode) {
-      // Dev mode: accept any 6-digit OTP
-      if (token === '123456') {
-        // Generate or reuse user ID
-        const userId = profile?.id || 'dev-' + Math.random().toString(36).substring(2, 9);
-        const profileData: UserProfile = {
-          id: userId,
-          phone: formattedPhone,
-          name: userName,
-          region: userRegion,
-          device_id: deviceId,
-        };
-        setProfile(profileData);
-        saveLocalProfile(profileData);
-        setDeviceRegistered(true);
-        setIsLoading(false);
-        return { error: null };
-      }
-      return { error: new Error('Invalid OTP') };
-    }
-
     const { data, error } = await supabase.auth.verifyOtp({
       phone: formattedPhone,
       token,
@@ -338,7 +297,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     const deviceId = getDeviceId();
     
-    if (!isDevMode && user) {
+    if (user) {
       await supabase
         .from('user_devices')
         .delete()
@@ -393,7 +352,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     saveLocalProgress(updatedProgress);
 
     // Update Supabase if configured
-    if (!isDevMode && isSupabaseConfigured()) {
+    if (isSupabaseConfigured()) {
       await supabase.from('user_progress').upsert({
         user_id: userId,
         course_id: courseId,

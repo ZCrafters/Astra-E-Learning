@@ -16,11 +16,10 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Allow all access in trial mode or development (when Supabase not configured)
+  // Allow all access in development (when Supabase not configured)
   const isSupabaseConfigured = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const isTrialMode = process.env.NEXT_PUBLIC_TRIAL_MODE === 'true';
   
-  if (isTrialMode || !isSupabaseConfigured) {
+  if (!isSupabaseConfigured) {
     // Development mode - allow access, client-side will handle auth state
     return NextResponse.next();
   }
