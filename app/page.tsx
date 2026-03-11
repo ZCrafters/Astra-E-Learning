@@ -22,7 +22,7 @@ export default function Dashboard() {
     
     coursesData.forEach(course => {
       const moduleProgresses = course.modules.map(module => {
-        const saved = progress.find(p => p.module_id === module.id);
+        const saved = progress.get(module.id);
         return saved ? saved.progress : module.progress;
       });
       
@@ -49,6 +49,7 @@ export default function Dashboard() {
     const saved = localStorage.getItem('pao_completed_tugas');
     if (saved) {
       const ids: number[] = JSON.parse(saved);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCompletedTugasCount(ids.length);
     }
   }, []);

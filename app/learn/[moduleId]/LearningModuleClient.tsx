@@ -13,50 +13,57 @@ import {
   Clock,
   BookOpen,
 } from 'lucide-react';
-import { coursesData } from '@/lib/courseData';
+import { coursesData, Module } from '@/lib/courseData';
 
 interface Slide {
   title: string;
   content: string;
 }
 
-function getModuleData(moduleId: string) {
-  for (const course of coursesData) {
-    const mod = course.modules.find((m) => m.id === moduleId);
-    if (mod) {
-      // Generate slide content from module data
-      const slides: Slide[] = [
-        {
-          title: `Pengenalan: ${mod.title}`,
-          content: mod.description,
-        },
-        {
-          title: 'Tujuan Pembelajaran',
-          content: `Setelah menyelesaikan modul "${mod.title}", Anda akan memahami konsep-konsep kunci dan mampu menerapkannya dalam pekerjaan sehari-hari sebagai PAO Finatra.`,
-        },
-        {
-          title: 'Materi Utama',
-          content: `Modul ini terdiri dari ${mod.totalLessons} pelajaran yang dirancang untuk membangun kompetensi Anda secara bertahap. Estimasi waktu: ${mod.duration}.`,
-        },
-        {
-          title: 'Studi Kasus',
-          content: `Pelajari bagaimana konsep "${mod.title}" diterapkan dalam situasi nyata di lapangan oleh Partnership Account Officer.`,
-        },
-        {
-          title: 'Ringkasan & Evaluasi',
-          content: `Anda telah menyelesaikan materi "${mod.title}". Lanjutkan ke kuis untuk menguji pemahaman Anda.`,
-        },
-      ];
+interface ModuleData extends Module {
+  courseId: string;
+  courseTitle: string;
+  slides: Slide[];
+}
 
-      return {
-        ...mod,
-        courseId: course.id,
-        courseTitle: course.title,
-        slides,
-      };
-    }
+const moduleDataMap = new Map<string, ModuleData>();
+
+for (const course of coursesData) {
+  for (const mod of course.modules) {
+    const slides: Slide[] = [
+      {
+        title: `Pengenalan: ${mod.title}`,
+        content: mod.description,
+      },
+      {
+        title: 'Tujuan Pembelajaran',
+        content: `Setelah menyelesaikan modul "${mod.title}", Anda akan memahami konsep-konsep kunci dan mampu menerapkannya dalam pekerjaan sehari-hari sebagai PAO Finatra.`,
+      },
+      {
+        title: 'Materi Utama',
+        content: `Modul ini terdiri dari ${mod.totalLessons} pelajaran yang dirancang untuk membangun kompetensi Anda secara bertahap. Estimasi waktu: ${mod.duration}.`,
+      },
+      {
+        title: 'Studi Kasus',
+        content: `Pelajari bagaimana konsep "${mod.title}" diterapkan dalam situasi nyata di lapangan oleh Partnership Account Officer.`,
+      },
+      {
+        title: 'Ringkasan & Evaluasi',
+        content: `Anda telah menyelesaikan materi "${mod.title}". Lanjutkan ke kuis untuk menguji pemahaman Anda.`,
+      },
+    ];
+
+    moduleDataMap.set(mod.id, {
+      ...mod,
+      courseId: course.id,
+      courseTitle: course.title,
+      slides,
+    });
   }
-  return null;
+}
+
+function getModuleData(moduleId: string): ModuleData | null {
+  return moduleDataMap.get(moduleId) || null;
 }
 
 export default function LearningModuleClient() {
