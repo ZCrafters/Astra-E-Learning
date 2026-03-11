@@ -268,10 +268,14 @@ export const categoryLabels: Record<Mission['category'], string> = {
   'hitung-data': 'Hitung Data',
 };
 
+const missionsMap = new Map<string, Mission>(
+  missionsData.map((m) => [m.id, m])
+);
+
 export const TOTAL_WEEKLY_MISSIONS = 5;
 
 export function getMissionById(id: string): Mission | undefined {
-  return missionsData.find((m) => m.id === id);
+  return missionsMap.get(id);
 }
 
 export function generateCSV(template: MissionTemplate): string {
