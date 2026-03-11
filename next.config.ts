@@ -1,5 +1,7 @@
 import type {NextConfig} from 'next';
 
+const isGithubPages = process.env.GITHUB_PAGES === 'true';
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   eslint: {
@@ -10,6 +12,7 @@ const nextConfig: NextConfig = {
   },
   // Allow access to remote image placeholder.
   images: {
+    unoptimized: isGithubPages,
     remotePatterns: [
       {
         protocol: 'https',
@@ -25,7 +28,8 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  output: 'standalone',
+  output: isGithubPages ? 'export' : 'standalone',
+  ...(isGithubPages && { basePath: '/Astra-E-Learning' }),
   transpilePackages: ['motion'],
   webpack: (config, {dev}) => {
     // HMR is disabled in AI Studio via DISABLE_HMR env var.
