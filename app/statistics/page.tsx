@@ -8,7 +8,7 @@ import { userStats } from '@/lib/courseData';
 interface StatCardProps {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
-  value: string;
+  value: string | number;
   trend: string;
   trendUp?: boolean;
 }
@@ -97,7 +97,7 @@ export default function StatisticsPage() {
           <StatCard
             icon={Users}
             label="Total Leads"
-            value={String(userStats.stats.totalLeads)}
+            value={userStats.stats.totalLeads}
             trend="+12%"
             trendUp={true}
           />
@@ -111,7 +111,7 @@ export default function StatisticsPage() {
           <StatCard
             icon={TrendingUp}
             label="Rating"
-            value={String(userStats.stats.rating)}
+            value={userStats.stats.rating}
             trend="Stabil"
           />
           <StatCard
