@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useSyncExternalStore } from 'react';
 import { missionsData, TOTAL_WEEKLY_MISSIONS } from './missionData';
 
 interface MissionsContextType {
@@ -20,29 +20,50 @@ function getLevel(xp: number): string {
   return 'Pemula';
 }
 
-function loadCompletedMissions(): string[] {
-  if (typeof window === 'undefined') return [];
-  const saved = localStorage.getItem('pao_completed_missions');
+const STORAGE_KEY = 'pao_completed_missions';
+
+let listeners: Array<() => void> = [];
+
+function emitChange() {
+  for (const listener of listeners) {
+    listener();
+  }
+}
+
+function subscribe(listener: () => void) {
+  listeners = [...listeners, listener];
+  return () => {
+    listeners = listeners.filter((l) => l !== listener);
+  };
+}
+
+function getSnapshot(): string[] {
+  const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) return parsed;
     } catch {
-      return [];
+      // ignore
     }
   }
   return [];
 }
 
+const emptyArray: string[] = [];
+function getServerSnapshot(): string[] {
+  return emptyArray;
+}
+
+function setStoredMissions(missions: string[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(missions));
+  emitChange();
+}
+
 const MissionsContext = createContext<MissionsContextType | undefined>(undefined);
 
 export function MissionsProvider({ children }: { children: React.ReactNode }) {
-  const [completedMissions, setCompletedMissions] = useState<string[]>(loadCompletedMissions);
-
-  // Save to localStorage on change
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem('pao_completed_missions', JSON.stringify(completedMissions));
-  }, [completedMissions]);
+  const completedMissions = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const totalXP = missionsData
     .filter((m) => completedMissions.includes(m.id))
@@ -59,10 +80,9 @@ export function MissionsProvider({ children }: { children: React.ReactNode }) {
   );
 
   const completeMission = useCallback((id: string) => {
-    setCompletedMissions((prev) => {
-      if (prev.includes(id)) return prev;
-      return [...prev, id];
-    });
+    const current = getSnapshot();
+    if (current.includes(id)) return;
+    setStoredMissions([...current, id]);
   }, []);
 
   return (
