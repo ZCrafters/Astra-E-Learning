@@ -170,7 +170,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Check if trial mode or Supabase not configured
       if (isTrialMode() || !isSupabaseConfigured()) {
-        console.info('Running in trial mode with localStorage. OTP code: 123456');
         setIsDevMode(true);
         // Try to load from localStorage
         const localProfile = loadLocalProfile();
