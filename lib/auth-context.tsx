@@ -233,7 +233,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     if (isDevMode) {
       // Dev mode: simulate OTP sent
-      console.log(`[DEV] OTP sent to ${formattedPhone}: 123456`);
       return { error: null };
     }
 
