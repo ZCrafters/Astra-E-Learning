@@ -2,14 +2,17 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Bell, PlayCircle, BookOpen, Map, TrendingUp, Award, Clock, Star, LogOut } from 'lucide-react';
+import { Bell, PlayCircle, BookOpen, Map, TrendingUp, Award, Clock, Star, LogOut, ClipboardList } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { coursesData } from '@/lib/courseData';
 import { useAuth } from '@/lib/auth-context';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function Dashboard() {
   const { profile, progress, logout, isLoading, isAuthenticated } = useAuth();
+  const [completedTugasCount, setCompletedTugasCount] = useState(0);
+
+  const TOTAL_TUGAS = 10;
   
   // Calculate progress from database
   const userProgress = useMemo(() => {
@@ -34,8 +37,12 @@ export default function Dashboard() {
 
   // Sync progress to database when component mounts
   useEffect(() => {
-    // This would sync any local changes to the database
-    // Implementation depends on your sync strategy
+    // Load completed tugas count from localStorage
+    const saved = localStorage.getItem('pao_completed_tugas');
+    if (saved) {
+      const ids: number[] = JSON.parse(saved);
+      setCompletedTugasCount(ids.length);
+    }
   }, []);
 
   if (isLoading) {
@@ -108,6 +115,32 @@ export default function Dashboard() {
                 <span className="flex items-center justify-center gap-2">
                   <PlayCircle className="w-5 h-5 fill-current" />
                   LANJUTKAN BELAJAR
+                </span>
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Tugas Progress */}
+        <section className="px-4 pt-4">
+          <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden">
+            <div className="relative z-10">
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h2 className="text-lg font-bold mb-0.5">Tugas Lapangan</h2>
+                  <p className="text-emerald-100 text-sm">Sudah {completedTugasCount} dari {TOTAL_TUGAS} tugas selesai</p>
+                </div>
+                <span className="bg-white/20 px-2.5 py-1 rounded-full text-sm font-bold">
+                  {completedTugasCount}/{TOTAL_TUGAS}
+                </span>
+              </div>
+              <div className="h-2.5 w-full bg-white/20 rounded-full overflow-hidden mb-4">
+                <div className="h-full bg-white rounded-full transition-all" style={{ width: `${(completedTugasCount / TOTAL_TUGAS) * 100}%` }}></div>
+              </div>
+              <Link href="/missions" className="block w-full bg-white text-emerald-600 font-bold py-3 rounded-xl text-center shadow-lg hover:bg-slate-50 active:scale-[0.98] transition-all">
+                <span className="flex items-center justify-center gap-2">
+                  <ClipboardList className="w-5 h-5" />
+                  LIHAT TUGAS HARI INI
                 </span>
               </Link>
             </div>

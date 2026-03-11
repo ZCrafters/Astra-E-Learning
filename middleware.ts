@@ -5,7 +5,7 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
   // Public paths that don't require auth
-  const publicPaths = ['/login', '/_next', '/api', '/favicon.ico'];
+  const publicPaths = ['/login', '/admin', '/_next', '/api', '/favicon.ico'];
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
   
   // Check for auth - in dev mode without Supabase, we check for device_id or localStorage simulation

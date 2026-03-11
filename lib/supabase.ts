@@ -102,6 +102,54 @@ export type Database = {
           created_at?: string;
         };
       };
+      tugas: {
+        Row: {
+          id: number;
+          judul: string;
+          kategori: string;
+          durasi: string;
+          xp: number;
+          urutan: number;
+          langkah: string[];
+        };
+        Insert: {
+          id?: number;
+          judul: string;
+          kategori: string;
+          durasi: string;
+          xp?: number;
+          urutan?: number;
+          langkah: string[];
+        };
+      };
+      tugas_progress: {
+        Row: {
+          id: string;
+          user_id: string;
+          tugas_id: number;
+          completed_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          tugas_id: number;
+          completed_at?: string;
+        };
+      };
+      admins: {
+        Row: {
+          id: string;
+          username: string;
+          password_hash: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          username: string;
+          password_hash: string;
+          created_at?: string;
+        };
+      };
     };
   };
 };

@@ -2,13 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, BookOpen, TrendingUp, User } from 'lucide-react';
+import { Home, BookOpen, ClipboardList, TrendingUp, User } from 'lucide-react';
 import { memo } from 'react';
 
 const navItems = [
   { name: 'Beranda', path: '/', icon: Home },
+  { name: 'Tugas', path: '/missions', icon: ClipboardList },
   { name: 'Kursus', path: '/courses', icon: BookOpen },
-  { name: 'Belajar', path: '/learn', icon: TrendingUp },
   { name: 'Profil', path: '/profile', icon: User },
 ] as const;
 
