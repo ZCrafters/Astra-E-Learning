@@ -31,6 +31,8 @@ export default function AdminPage() {
     setLoginLoading(true);
 
     try {
+      // NOTE: In production, use proper password hashing (bcrypt/argon2).
+      // The current approach compares password_hash as plaintext per project requirements.
       const { data: admin, error } = await supabase
         .from('admins')
         .select('id, username')
@@ -46,8 +48,9 @@ export default function AdminPage() {
 
       setIsLoggedIn(true);
       await loadData();
-    } catch {
-      setLoginError('Gagal login. Coba lagi.');
+    } catch (err) {
+      console.error('Admin login error:', err);
+      setLoginError('Gagal login. Periksa koneksi dan coba lagi.');
     }
     setLoginLoading(false);
   };
@@ -62,8 +65,8 @@ export default function AdminPage() {
       if (!error && ringkasan) {
         setData(ringkasan as RingkasanPAO[]);
       }
-    } catch {
-      // Silently handle
+    } catch (err) {
+      console.error('Failed to load admin data:', err);
     }
     setDataLoading(false);
   };
