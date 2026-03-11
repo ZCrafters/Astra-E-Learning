@@ -24,7 +24,7 @@ interface UserProgress {
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
-  progress: UserProgress[];
+  progress: Map<string, UserProgress>;
   isLoading: boolean;
   isAuthenticated: boolean;
   deviceRegistered: boolean;
@@ -62,7 +62,7 @@ const isSupabaseConfigured = () => {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [progress, setProgress] = useState<UserProgress[]>([]);
+  const [progress, setProgress] = useState<Map<string, UserProgress>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [deviceRegistered, setDeviceRegistered] = useState(false);
   const [isDevMode, setIsDevMode] = useState(false);
@@ -78,7 +78,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setProfile(parsed);
       setDeviceRegistered(true);
       if (savedProgress) {
-        setProgress(JSON.parse(savedProgress));
+        const parsedProgress = JSON.parse(savedProgress);
+        const progressMap = new Map<string, UserProgress>();
+        if (Array.isArray(parsedProgress)) {
+          parsedProgress.forEach((p: UserProgress) => {
+            progressMap.set(p.module_id, p);
+          });
+        }
+        setProgress(progressMap);
       }
       return parsed;
     }
@@ -92,9 +99,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Save progress to localStorage
-  const saveLocalProgress = useCallback((progressData: UserProgress[]) => {
+  const saveLocalProgress = useCallback((progressData: Map<string, UserProgress>) => {
     if (typeof window === 'undefined') return;
-    localStorage.setItem('pao_progress', JSON.stringify(progressData));
+    const progressArray = Array.from(progressData.values());
+    localStorage.setItem('pao_progress', JSON.stringify(progressArray));
   }, []);
 
   // Fetch user progress from Supabase
@@ -107,16 +115,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .eq('user_id', userId);
     
     if (data) {
-      const mapped = data.map((p: UserProgress) => ({
-        course_id: p.course_id,
-        module_id: p.module_id,
-        progress: p.progress,
-        completed_lessons: p.completed_lessons,
-        total_lessons: p.total_lessons,
-        is_completed: p.is_completed,
-      }));
-      setProgress(mapped);
-      saveLocalProgress(mapped);
+      const progressMap = new Map<string, UserProgress>();
+      data.forEach((p: UserProgress) => {
+        progressMap.set(p.module_id, {
+          course_id: p.course_id,
+          module_id: p.module_id,
+          progress: p.progress,
+          completed_lessons: p.completed_lessons,
+          total_lessons: p.total_lessons,
+          is_completed: p.is_completed,
+        });
+      });
+      setProgress(progressMap);
+      saveLocalProgress(progressMap);
     }
   }, [saveLocalProgress]);
 
@@ -349,7 +360,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setUser(null);
     setProfile(null);
-    setProgress([]);
+    setProgress(new Map());
     setDeviceRegistered(false);
     
     if (typeof window !== 'undefined') {
@@ -382,13 +393,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Update localStorage
-    const updatedProgress = [...progress];
-    const existingIndex = updatedProgress.findIndex(p => p.module_id === moduleId);
-    if (existingIndex >= 0) {
-      updatedProgress[existingIndex] = newProgress;
-    } else {
-      updatedProgress.push(newProgress);
-    }
+    const updatedProgress = new Map(progress);
+    updatedProgress.set(moduleId, newProgress);
     setProgress(updatedProgress);
     saveLocalProgress(updatedProgress);
 
@@ -411,7 +417,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Get module progress
   const getModuleProgress = (courseId: string, moduleId: string) => {
-    return progress.find(p => p.course_id === courseId && p.module_id === moduleId) || null;
+    const p = progress.get(moduleId);
+    return p && p.course_id === courseId ? p : null;
   };
 
   const value: AuthContextType = {
