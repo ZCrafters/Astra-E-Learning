@@ -107,7 +107,6 @@ export default function LoginPage() {
       
       if (updateError) {
         // Jika error karena user sudah ada, lanjutkan saja
-        console.log('Profile update:', updateError.message);
       }
 
       // Tunggu sebentar untuk memastikan state tersimpan
