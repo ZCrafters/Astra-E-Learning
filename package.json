@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "clean": "next clean",
-    "test": "node --experimental-strip-types --test"
+    "test": "npx tsx --test tests/**/*.test.ts"
   },
   "dependencies": {
     "@google/genai": "^1.17.0",
