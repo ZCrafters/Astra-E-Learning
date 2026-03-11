@@ -8,9 +8,6 @@ export function middleware(request: NextRequest) {
   const publicPaths = ['/login', '/admin', '/_next', '/api', '/favicon.ico'];
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
   
-  // Check for auth - in dev mode without Supabase, we check for device_id or localStorage simulation
-  const deviceId = request.cookies.get('pao_device_id')?.value;
-  
   // Skip auth check for static files
   if (pathname.includes('.')) {
     return NextResponse.next();
@@ -28,12 +25,12 @@ export function middleware(request: NextRequest) {
   // Production mode with Supabase
   const authToken = request.cookies.get('sb-access-token')?.value;
   
-  if (!isPublicPath && !authToken && !deviceId) {
+  if (!isPublicPath && !authToken) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
   
   // Redirect to home if already logged in and trying to access login
-  if (pathname === '/login' && (authToken || deviceId)) {
+  if (pathname === '/login' && authToken) {
     return NextResponse.redirect(new URL('/', request.url));
   }
   
