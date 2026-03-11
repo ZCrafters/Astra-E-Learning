@@ -49,6 +49,7 @@ export default function Dashboard() {
     const saved = localStorage.getItem('pao_completed_tugas');
     if (saved) {
       const ids: number[] = JSON.parse(saved);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCompletedTugasCount(ids.length);
     }
   }, []);
