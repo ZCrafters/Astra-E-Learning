@@ -22,7 +22,7 @@ export default function Dashboard() {
     
     coursesData.forEach(course => {
       const moduleProgresses = course.modules.map(module => {
-        const saved = progress.find(p => p.module_id === module.id);
+        const saved = progress.get(module.id);
         return saved ? saved.progress : module.progress;
       });
       
