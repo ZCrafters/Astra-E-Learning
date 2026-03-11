@@ -1,13 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { Bell, PlayCircle, BookOpen, Map, TrendingUp, Award, Clock, Star, LogOut, ClipboardList } from 'lucide-react';
+import { Bell, PlayCircle, BookOpen, Map, TrendingUp, Award, Clock, Star, LogOut, ClipboardList, ChevronRight } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import { useAuth } from '@/lib/auth-context';
+import { useMissions } from '@/lib/missions-context';
+import { coursesData } from '@/lib/courseData';
+import { missionsData } from '@/lib/missionData';
 import { useEffect, useMemo, useState } from 'react';
 
 export default function Dashboard() {
   const { profile, progress, logout, isLoading, isAuthenticated } = useAuth();
+  const { completedMissions, level, weeklyCompleted, weeklyTotal, totalXP } = useMissions();
   const [completedTugasCount, setCompletedTugasCount] = useState(0);
 
   const TOTAL_TUGAS = 10;
@@ -28,6 +32,10 @@ export default function Dashboard() {
     
     return courseProgress;
   }, [progress]);
+
+  const completedModules = useMemo(() => {
+    return coursesData.reduce((sum, course) => sum + course.completedModules, 0);
+  }, []);
 
   // Pick today's mission: first incomplete mission, or last if all done
   const todayMission = useMemo(() => {
@@ -88,7 +96,7 @@ export default function Dashboard() {
                 {todayMission.xp} XP
               </span>
             </div>
-          </div>
+          </Link>
         </section>
 
         {/* Tugas Progress */}
